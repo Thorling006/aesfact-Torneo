@@ -1,130 +1,143 @@
-# 🏆 Torneo Clash Royale — Sistema de Inscripciones AESFACT
+# 🏆 Torneo Clash Royale — Sistema de Inscripciones AESFACT 2026
 
-Sistema completo de inscripción para el Torneo de Clash Royale organizado por AESFACT.
-
-## 🗂️ Estructura del Proyecto
-
-```
-aesfact/
-├── server.js          # Servidor Express (API + archivos estáticos)
-├── database.js        # Módulo SQLite (CRUD de inscripciones)
-├── .env               # Variables de entorno (NO subir a Git)
-├── .env.example       # Plantilla de variables de entorno
-├── package.json       # Dependencias del proyecto
-├── inscripciones.db   # Base de datos (se crea automáticamente)
-└── public/
-    ├── index.html     # Formulario público de inscripción
-    ├── admin.html     # Panel de administrador
-    ├── css/
-    │   ├── style.css  # Estilos del formulario (temática CR)
-    │   └── admin.css  # Estilos del panel admin
-    └── js/
-        ├── form.js    # Lógica del formulario público
-        └── admin.js   # Lógica del panel admin
-```
+Sistema de inscripción en línea usando **GitHub Pages** (frontend gratis) y **Google Apps Script + Google Sheets** (backend + base de datos, gratis).
 
 ---
 
-## ⚙️ Instalación y puesta en marcha
+## ⚡ Configuración (hacer UNA sola vez)
 
-### Requisitos previos
-- [Node.js](https://nodejs.org/) versión 18 o superior
+### Paso 1 — Crear el Google Sheet y el Apps Script
 
-### Pasos
+1. Ve a [drive.google.com](https://drive.google.com) y crea una **hoja de cálculo** nueva  
+   (nómbrala "Inscripciones AESFACT 2026" o como quieras)
+2. Copia el **ID del Sheet** desde la URL:  
+   `https://docs.google.com/spreadsheets/d/`**`ESTE_ES_EL_ID`**`/edit`
+3. En el sheet: **Extensiones → Apps Script**
+4. Borra el código que viene y **pega TODO el contenido** de `apps-script/codigo.gs`
+5. Guarda (Ctrl+S) y ponle un nombre al proyecto (ej. "AESFACT Torneo API")
+
+### Paso 2 — Desplegar el Apps Script como Web App
+
+1. Clic en **"Implementar"** → **"Nueva implementación"**
+2. En "Seleccionar tipo" elige **Aplicación web**
+3. Configura así:
+   - **Descripción:** AESFACT Torneo 2026
+   - **Ejecutar como:** Yo (tu cuenta de Google)
+   - **Quién tiene acceso:** Cualquier usuario
+4. Clic en **"Implementar"** → Autoriza los permisos
+5. Copia la **URL de la aplicación web** (empieza con `https://script.google.com/macros/s/...`)
+
+### Paso 3 — Actualizar `public/js/config.js`
+
+Abre [public/js/config.js](public/js/config.js) y reemplaza los dos valores:
+
+```javascript
+const CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/TU_ID/exec', // ← pega tu URL aquí
+  SHEET_ID: 'TU_SHEET_ID_AQUI',                                       // ← pega el ID del Sheet
+  ADMIN_PASSWORD: 'aesfact2026',                                       // ← cambia si quieres
+};
+```
+
+> ⚠️ Si cambias `ADMIN_PASSWORD`, también debes cambiarlo en `apps-script/codigo.gs` (línea `const ADMIN_PASSWORD = ...`) y re-desplegar el Apps Script.
+
+### Paso 4 — Subir a GitHub y activar Pages
 
 ```bash
-# 1. Entrar a la carpeta del proyecto
-cd aesfact
+# Inicializar repositorio (si es la primera vez)
+git init
+git add .
+git commit -m "Torneo Clash Royale AESFACT 2026"
 
-# 2. Instalar dependencias
-npm install
-
-# 3. (Opcional) Cambiar la contraseña del admin en el archivo .env
-#    Edita la línea: ADMIN_PASSWORD=aesfact2025
-
-# 4. Iniciar el servidor
-node server.js
+# Crear repo en github.com y subir
+git remote add origin https://github.com/TU_USUARIO/aesfact-torneo.git
+git push -u origin main
 ```
 
-El servidor arrancará en **http://localhost:3000**
+En GitHub:
+1. Ve a **Settings → Pages**
+2. Source: **GitHub Actions**
+3. El workflow `.github/workflows/pages.yml` se ejecuta automáticamente
+4. En ~1 minuto tu sitio estará en: `https://TU_USUARIO.github.io/aesfact-torneo`
 
 ---
 
-## 🌐 Páginas disponibles
+## 🌐 Páginas del sitio
 
 | URL | Descripción |
 |-----|-------------|
-| `http://localhost:3000` | Formulario público de inscripción |
-| `http://localhost:3000/admin` | Panel de administrador |
+| `https://TU_USUARIO.github.io/aesfact-torneo/` | Formulario público |
+| `https://TU_USUARIO.github.io/aesfact-torneo/admin.html` | Panel de admin |
 
 ---
 
 ## 🔐 Panel de administrador
 
-- **URL:** `http://localhost:3000/admin`
-- **Contraseña por defecto:** `aesfact2028888`
-- Cambia la contraseña editando `.env` → `ADMIN_PASSWORD=tu_nueva_contraseña`
+- **Contraseña por defecto:** `aesfact2026`
+- Cambiar en `public/js/config.js` Y en `apps-script/codigo.gs`
 
-### Funciones del panel:
+### Funciones:
 - 📊 Ver todos los inscritos en tabla
-- 🔍 Buscar por nombre, código estudiantil o etiqueta CR
-- ✅ Confirmar o revertir estado de pago por inscripción
-- 📥 Exportar todos los datos a un archivo Excel (`.xlsx`)
+- 🔍 Buscar por nombre, código o etiqueta CR
+- ✅ Confirmar / revertir estado de pago
+- 📥 Exportar directamente a Excel (desde Google Sheets)
 
 ---
 
-## 🗄️ Base de datos
+## 🗂️ Estructura del proyecto
 
-Se usa **SQLite** mediante el paquete `better-sqlite3`. El archivo `inscripciones.db`
-se crea automáticamente la primera vez que arranca el servidor.
+```
+aesfact/
+├── public/                   ← Sitio estático (desplegado en GitHub Pages)
+│   ├── index.html            ← Formulario público de inscripción
+│   ├── admin.html            ← Panel de administrador
+│   ├── css/
+│   │   ├── style.css         ← Estilos (temática Clash Royale)
+│   │   └── admin.css         ← Estilos del panel admin
+│   └── js/
+│       ├── config.js         ← ⚠️ DEBES editar este archivo
+│       ├── form.js           ← Lógica del formulario
+│       └── admin.js          ← Lógica del panel admin
+│
+├── apps-script/
+│   └── codigo.gs             ← Código del backend (Google Apps Script)
+│
+├── .github/workflows/
+│   └── pages.yml             ← Deploy automático a GitHub Pages
+│
+├── .gitignore
+└── README.md
+```
 
-Para hacer una copia de seguridad, basta con copiar ese archivo `.db`.
-
-### Estructura de la tabla `inscripciones`
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | INTEGER PK | Autoincremental |
-| `nombre_completo` | TEXT | Nombre del participante |
-| `codigo_estudiantil` | TEXT UNIQUE | Ej. SMSS029224 |
-| `telefono` | TEXT | Número de contacto |
-| `nombre_clash_royale` | TEXT | Nick del juego |
-| `etiqueta_clash_royale` | TEXT | Etiqueta del jugador (ej. #2PQRL) |
-| `acepto_reglamento` | INTEGER | 1 = sí, 0 = no |
-| `acepto_fotos` | INTEGER | 1 = sí, 0 = no |
-| `fecha_hora_inscripcion` | TEXT | Timestamp automático |
-| `estado_pago` | TEXT | `pendiente` o `confirmado` |
-
----
-
-## 📦 Dependencias
-
-| Paquete | Uso |
-|---------|-----|
-| `express` | Servidor web y API REST |
-| `better-sqlite3` | Base de datos SQLite (síncrona) |
-| `xlsx` | Generación de archivos Excel |
-| `dotenv` | Variables de entorno desde `.env` |
-| `cors` | Cabeceras CORS |
+> Los archivos `server.js`, `database.js` y `package.json` son la versión local (Node.js) que también funciona para desarrollo.
 
 ---
 
-## 🚀 API Endpoints
+## 📦 Versión local (desarrollo sin internet)
 
-### Públicos
-- `POST /api/inscripcion` — Registrar nuevo participante
+```bash
+npm install
+node server.js
+# Abrir http://localhost:3000
+```
 
-### Protegidos (requieren header `X-Admin-Password`)
-- `POST /api/admin/login` — Validar contraseña
-- `GET /api/admin/inscripciones` — Listar inscritos (`?q=búsqueda`)
-- `PATCH /api/admin/inscripciones/:id/pago` — Cambiar estado de pago
-- `GET /api/admin/estadisticas` — Obtener contadores
-- `GET /api/admin/exportar` — Descargar Excel (`?password=xxx`)
+> En la versión local se usa SQLite. En GitHub Pages se usa Google Sheets.
 
 ---
 
-## 📝 Notas
+## 🗄️ Google Sheets como base de datos
 
-- Las inscripciones duplicadas por **código estudiantil** son rechazadas automáticamente.
-- La base de datos se guarda en el mismo directorio del proyecto.
-- La contraseña del admin nunca se almacena en el cliente más allá de la sesión activa.
+La hoja "Inscripciones" tiene estas columnas:
+
+| Columna | Descripción |
+|---------|-------------|
+| ID | Número de inscripción |
+| Nombre Completo | Nombre del participante |
+| Código Estudiantil | Ej. SMSS029224 (único) |
+| Teléfono | Número de contacto |
+| Nombre Clash Royale | Nick del juego |
+| Etiqueta Clash Royale | Ej. #2PQRLV8CJ |
+| Aceptó Reglamento | Sí / No |
+| Aceptó Fotos | Sí / No |
+| Fecha/Hora Inscripción | Automático |
+| Estado de Pago | pendiente / confirmado |

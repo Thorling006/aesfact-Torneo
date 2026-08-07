@@ -1,0 +1,43 @@
+# GitHub Actions — Deploy automático a GitHub Pages
+# Se ejecuta cada vez que haces push a la rama main
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # También permite ejecutarlo manualmente
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      # Sube la carpeta /public como el sitio estático
+      - name: Subir archivos del sitio
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public'
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

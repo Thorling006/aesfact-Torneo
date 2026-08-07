@@ -1,14 +1,16 @@
 /**
  * admin.js
- * Lógica del panel de administrador para el Torneo Clash Royale AESFACT.
+ * Lógica del panel de administrador — versión GitHub Pages.
+ * Conecta con Google Apps Script en lugar del servidor Node.js local.
  *
- * Responsabilidades:
- * - Autenticación con contraseña (guardada en sessionStorage)
- * - Carga y renderizado de inscripciones en tabla
- * - Búsqueda en tiempo real con debounce
- * - Cambio de estado de pago por inscripción
- * - Exportación a Excel via API del backend
- * - Actualización de estadísticas
+ * Lo que cambió respecto a la versión local:
+ *  - iniciarSesion(): verifica contraseña contra CONFIG.ADMIN_PASSWORD (lado cliente)
+ *  - cargarInscripciones(): fetch a Apps Script GET ?action=list
+ *  - cargarEstadisticas(): fetch a Apps Script GET ?action=stats
+ *  - cambiarPago(): POST a Apps Script con action=updatePago
+ *  - exportarExcel(): enlace de descarga directa de Google Sheets (.xlsx)
+ *
+ * Lo que NO cambió: toda la lógica de UI, tabla, toast, búsqueda, etc.
  */
 
 'use strict';
@@ -17,8 +19,7 @@
 // Estado global del panel
 // ─────────────────────────────────────────────
 
-let passwordAdmin = '';       // Contraseña en memoria de la sesión
-let timerBusqueda = null;     // Debounce timer para el buscador
+let timerBusqueda = null; // Debounce timer para el buscador
 
 // ─────────────────────────────────────────────
 // Inicialización
@@ -26,88 +27,58 @@ let timerBusqueda = null;     // Debounce timer para el buscador
 
 document.addEventListener('DOMContentLoaded', () => {
   // Verificar si hay sesión guardada en sessionStorage
-  const sesionGuardada = sessionStorage.getItem('aesfact_admin_pw');
-  if (sesionGuardada) {
-    passwordAdmin = sesionGuardada;
+  const sesionGuardada = sessionStorage.getItem('aesfact_admin_ok');
+  if (sesionGuardada === 'true') {
     mostrarPanel();
   }
 });
 
 // ─────────────────────────────────────────────
-// Autenticación
+// Autenticación (verificación local + Apps Script valida en cada llamada)
 // ─────────────────────────────────────────────
 
 /**
- * Maneja el inicio de sesión del administrador.
- * @param {Event} e - Evento submit del formulario
+ * Verifica la contraseña localmente contra CONFIG.ADMIN_PASSWORD.
+ * La contraseña también se valida en cada llamada a Apps Script del lado servidor.
+ * @param {Event} e
  */
-async function iniciarSesion(e) {
+function iniciarSesion(e) {
   e.preventDefault();
   const input    = document.getElementById('input-password');
   const errorEl  = document.getElementById('login-error');
-  const password = input.value;
+  const password = input.value.trim();
 
-  try {
-    const res = await fetch('/api/admin/login', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ password }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.ok) {
-      // Guardar contraseña en sessionStorage (se borra al cerrar pestaña)
-      passwordAdmin = password;
-      sessionStorage.setItem('aesfact_admin_pw', password);
-      errorEl.classList.remove('visible');
-      mostrarPanel();
-    } else {
-      errorEl.textContent = data.error || 'Contraseña incorrecta.';
-      errorEl.classList.add('visible');
-      input.value = '';
-      input.focus();
-    }
-  } catch {
-    errorEl.textContent = 'Error de conexión con el servidor.';
+  if (password === CONFIG.ADMIN_PASSWORD) {
+    // Guardar sesión (se borra al cerrar la pestaña)
+    sessionStorage.setItem('aesfact_admin_ok', 'true');
+    errorEl.classList.remove('visible');
+    mostrarPanel();
+  } else {
+    errorEl.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
     errorEl.classList.add('visible');
+    input.value = '';
+    input.focus();
   }
 }
 
 /**
- * Cierra la sesión y regresa a la pantalla de login.
+ * Cierra la sesión y regresa al login.
  */
 function cerrarSesion() {
-  sessionStorage.removeItem('aesfact_admin_pw');
-  passwordAdmin = '';
+  sessionStorage.removeItem('aesfact_admin_ok');
   document.getElementById('pantalla-admin').classList.remove('visible');
   document.getElementById('pantalla-login').style.display = 'flex';
   document.getElementById('input-password').value = '';
 }
 
 /**
- * Muestra el panel de administrador y carga los datos iniciales.
+ * Muestra el panel principal y carga datos iniciales.
  */
 function mostrarPanel() {
   document.getElementById('pantalla-login').style.display  = 'none';
   document.getElementById('pantalla-admin').classList.add('visible');
-  // Cargar datos
   cargarEstadisticas();
   cargarInscripciones();
-}
-
-// ─────────────────────────────────────────────
-// Headers de autenticación para las peticiones
-// ─────────────────────────────────────────────
-
-/**
- * Retorna los headers con la contraseña de admin para peticiones protegidas.
- */
-function headersAdmin() {
-  return {
-    'Content-Type':    'application/json',
-    'X-Admin-Password': passwordAdmin,
-  };
 }
 
 // ─────────────────────────────────────────────
@@ -115,20 +86,21 @@ function headersAdmin() {
 // ─────────────────────────────────────────────
 
 /**
- * Carga y muestra las estadísticas de inscripciones.
+ * Carga contadores desde Apps Script y los muestra en las tarjetas.
  */
 async function cargarEstadisticas() {
   try {
-    const res  = await fetch('/api/admin/estadisticas', { headers: headersAdmin() });
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=stats&password=${encodeURIComponent(CONFIG.ADMIN_PASSWORD)}`;
+    const res  = await fetch(url, { redirect: 'follow' });
     const data = await res.json();
 
-    if (res.ok) {
-      document.getElementById('stat-total').textContent       = data.total;
-      document.getElementById('stat-confirmados').textContent = data.confirmados;
-      document.getElementById('stat-pendientes').textContent  = data.pendientes;
-    }
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('stat-total').textContent       = data.total;
+    document.getElementById('stat-confirmados').textContent = data.confirmados;
+    document.getElementById('stat-pendientes').textContent  = data.pendientes;
   } catch {
-    // Silencioso — no interrumpir la UI por esto
+    // Silencioso — no interrumpir la UI
   }
 }
 
@@ -137,13 +109,12 @@ async function cargarEstadisticas() {
 // ─────────────────────────────────────────────
 
 /**
- * Carga las inscripciones desde el backend y las renderiza en la tabla.
- * @param {string} [busqueda=''] - Término de búsqueda opcional
+ * Carga las inscripciones desde Apps Script y las muestra en la tabla.
+ * @param {string} [busqueda='']
  */
 async function cargarInscripciones(busqueda = '') {
   const tbody = document.getElementById('cuerpo-tabla');
 
-  // Mostrar estado de carga
   tbody.innerHTML = `
     <tr>
       <td colspan="9">
@@ -155,26 +126,18 @@ async function cargarInscripciones(busqueda = '') {
     </tr>`;
 
   try {
-    const url = busqueda
-      ? `/api/admin/inscripciones?q=${encodeURIComponent(busqueda)}`
-      : '/api/admin/inscripciones';
-
-    const res  = await fetch(url, { headers: headersAdmin() });
-
-    // Si la sesión expiró (401), redirigir al login
-    if (res.status === 401) {
-      cerrarSesion();
-      return;
-    }
-
+    const params = new URLSearchParams({
+      action:   'list',
+      password: CONFIG.ADMIN_PASSWORD,
+      q:        busqueda,
+    });
+    const res  = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${params}`, { redirect: 'follow' });
     const data = await res.json();
 
-    if (!res.ok) {
-      throw new Error(data.error || 'Error al cargar inscripciones.');
-    }
+    if (data.error) throw new Error(data.error);
 
-    renderizarTabla(data.inscripciones);
-    cargarEstadisticas(); // Actualizar contadores también
+    renderizarTabla(data.inscripciones || []);
+    cargarEstadisticas();
 
   } catch (err) {
     tbody.innerHTML = `
@@ -182,7 +145,7 @@ async function cargarInscripciones(busqueda = '') {
         <td colspan="9">
           <div class="tabla-vacia">
             <p>⚠️</p>
-            <p>Error al cargar datos: ${err.message}</p>
+            <p>Error al cargar: ${escaparHTML(err.message)}</p>
           </div>
         </td>
       </tr>`;
@@ -190,8 +153,8 @@ async function cargarInscripciones(busqueda = '') {
 }
 
 /**
- * Renderiza las filas de la tabla de inscripciones.
- * @param {Array} inscripciones - Array de objetos de inscripción
+ * Renderiza las filas de inscripciones en la tabla.
+ * @param {Array} inscripciones
  */
 function renderizarTabla(inscripciones) {
   const tbody = document.getElementById('cuerpo-tabla');
@@ -211,15 +174,13 @@ function renderizarTabla(inscripciones) {
 
   tbody.innerHTML = inscripciones.map((ins) => {
     const esConfirmado = ins.estado_pago === 'confirmado';
-
-    // Formatear fecha de forma legible
-    const fecha = ins.fecha_hora_inscripcion
-      ? ins.fecha_hora_inscripcion.replace('T', ' ').substring(0, 16)
+    const fecha        = ins.fecha_hora_inscripcion
+      ? String(ins.fecha_hora_inscripcion).substring(0, 16)
       : '—';
 
     return `
       <tr>
-        <td>${ins.id}</td>
+        <td>${escaparHTML(String(ins.id))}</td>
         <td>${escaparHTML(ins.nombre_completo)}</td>
         <td class="col-codigo"><code style="font-size:0.82rem;">${escaparHTML(ins.codigo_estudiantil)}</code></td>
         <td class="col-telefono">${escaparHTML(ins.telefono)}</td>
@@ -233,12 +194,8 @@ function renderizarTabla(inscripciones) {
         </td>
         <td>
           ${esConfirmado
-            ? `<button class="btn-pago revertir" onclick="cambiarPago(${ins.id}, 'pendiente')" title="Revertir a pendiente">
-                ↩ Revertir
-               </button>`
-            : `<button class="btn-pago confirmar" onclick="cambiarPago(${ins.id}, 'confirmado')" title="Marcar pago como confirmado">
-                ✅ Confirmar
-               </button>`
+            ? `<button class="btn-pago revertir" onclick="cambiarPago(${ins.id}, 'pendiente')">↩ Revertir</button>`
+            : `<button class="btn-pago confirmar" onclick="cambiarPago(${ins.id}, 'confirmado')">✅ Confirmar</button>`
           }
         </td>
       </tr>`;
@@ -250,29 +207,30 @@ function renderizarTabla(inscripciones) {
 // ─────────────────────────────────────────────
 
 /**
- * Actualiza el estado de pago de una inscripción.
- * @param {number} id     - ID de la inscripción
- * @param {string} estado - 'confirmado' o 'pendiente'
+ * Envía actualización de pago a Apps Script mediante POST.
+ * @param {number} id
+ * @param {string} estado - 'confirmado' | 'pendiente'
  */
 async function cambiarPago(id, estado) {
   try {
-    const res = await fetch(`/api/admin/inscripciones/${id}/pago`, {
-      method:  'PATCH',
-      headers: headersAdmin(),
-      body:    JSON.stringify({ estado }),
+    // Enviamos como POST con Content-Type: text/plain para evitar preflight CORS
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method:   'POST',
+      headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:     JSON.stringify({ action: 'updatePago', id, estado, password: CONFIG.ADMIN_PASSWORD }),
+      redirect: 'follow',
     });
 
     const data = await res.json();
 
-    if (res.ok) {
-      mostrarToast(`✅ Pago marcado como "${estado}" correctamente.`, 'exito');
-      // Recargar la tabla con el mismo término de búsqueda activo
+    if (data.error) {
+      mostrarToast(`❌ ${data.error}`, 'error');
+    } else {
+      mostrarToast(`✅ Pago marcado como "${estado}".`, 'exito');
       const busqueda = document.getElementById('buscador').value;
       cargarInscripciones(busqueda);
-    } else {
-      mostrarToast(`❌ Error: ${data.error}`, 'error');
     }
-  } catch {
+  } catch (err) {
     mostrarToast('❌ Error de conexión.', 'error');
   }
 }
@@ -282,15 +240,14 @@ async function cambiarPago(id, estado) {
 // ─────────────────────────────────────────────
 
 /**
- * Espera 400ms después de la última pulsación antes de buscar.
- * Evita llamadas al servidor en cada letra presionada.
+ * Espera 500ms antes de buscar para no sobrecargar Apps Script.
  */
 function buscarConDelay() {
   clearTimeout(timerBusqueda);
   timerBusqueda = setTimeout(() => {
     const busqueda = document.getElementById('buscador').value.trim();
     cargarInscripciones(busqueda);
-  }, 400);
+  }, 500);
 }
 
 // ─────────────────────────────────────────────
@@ -298,23 +255,19 @@ function buscarConDelay() {
 // ─────────────────────────────────────────────
 
 /**
- * Descarga el archivo Excel generado por el backend.
- * Se utiliza un enlace temporal para activar la descarga.
+ * Abre la URL de descarga directa de Google Sheets en formato .xlsx.
+ * No requiere servidor — Google Sheets genera el archivo.
  */
 function exportarExcel() {
-  // Construir URL con la contraseña como parámetro query
-  // (necesario porque los navegadores no envían headers en <a download>)
-  const url = `/api/admin/exportar?password=${encodeURIComponent(passwordAdmin)}`;
+  if (!CONFIG.SHEET_ID || CONFIG.SHEET_ID === 'TU_SHEET_ID_AQUI') {
+    mostrarToast('⚠️ Configura el SHEET_ID en js/config.js primero.', 'error');
+    return;
+  }
 
-  // Crear enlace temporal e invocar la descarga
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = ''; // El backend establece el nombre del archivo
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  mostrarToast('📥 Descargando archivo Excel...', 'exito');
+  // URL de exportación directa de Google Sheets a Excel
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/export?format=xlsx&sheet=Inscripciones`;
+  window.open(url, '_blank');
+  mostrarToast('📥 Descargando Excel desde Google Sheets...', 'exito');
 }
 
 // ─────────────────────────────────────────────
@@ -322,9 +275,8 @@ function exportarExcel() {
 // ─────────────────────────────────────────────
 
 /**
- * Escapa caracteres HTML para prevenir XSS al insertar texto en el DOM.
+ * Escapa caracteres HTML para prevenir XSS.
  * @param {string} str
- * @returns {string}
  */
 function escaparHTML(str) {
   if (!str) return '—';
@@ -336,17 +288,13 @@ function escaparHTML(str) {
 }
 
 /**
- * Muestra un toast de notificación temporal.
+ * Muestra un toast de notificación temporal (3.5 segundos).
  * @param {string} mensaje
  * @param {'exito'|'error'} tipo
  */
 function mostrarToast(mensaje, tipo = 'exito') {
-  const toast = document.getElementById('toast');
+  const toast       = document.getElementById('toast');
   toast.textContent = mensaje;
   toast.className   = `toast ${tipo} visible`;
-
-  // Auto-ocultar después de 3.5 segundos
-  setTimeout(() => {
-    toast.classList.remove('visible');
-  }, 3500);
+  setTimeout(() => toast.classList.remove('visible'), 3500);
 }

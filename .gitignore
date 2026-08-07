@@ -1,0 +1,21 @@
+# ── Node.js ───────────────────────────────────────────
+node_modules/
+npm-debug.log*
+
+# ── Base de datos local ────────────────────────────────
+inscripciones.db
+inscripciones.db-journal
+
+# ── Variables de entorno (contiene contraseñas) ────────
+.env
+
+# ── Sistema operativo ──────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editores ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

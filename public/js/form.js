@@ -218,11 +218,14 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    // Enviar al backend
-    const respuesta = await fetch('/api/inscripcion', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(datos),
+    // Enviar al backend (Google Apps Script)
+    // Usamos Content-Type: text/plain para evitar el preflight CORS
+    // Apps Script recibe el JSON en e.postData.contents y lo parsea normalmente
+    const respuesta = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method:   'POST',
+      headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:     JSON.stringify(datos),
+      redirect: 'follow',
     });
 
     const resultado = await respuesta.json();
