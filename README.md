@@ -12,7 +12,7 @@
 
 ## 🔐 Panel de administrador
 
-- **Contraseña por defecto:** `aesfact2026`
+- **Contraseña por defecto:** `1500`
 - Cambiar en `public/js/config.js` Y en `apps-script/codigo.gs`
 
 ### Funciones:
