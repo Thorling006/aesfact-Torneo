@@ -62,7 +62,7 @@ El servidor arrancará en **http://localhost:3000**
 ## 🔐 Panel de administrador
 
 - **URL:** `http://localhost:3000/admin`
-- **Contraseña por defecto:** `aesfact2025`
+- **Contraseña por defecto:** `aesfact2028888`
 - Cambia la contraseña editando `.env` → `ADMIN_PASSWORD=tu_nueva_contraseña`
 
 ### Funciones del panel:
