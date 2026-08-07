@@ -35,7 +35,7 @@ const {
 
 const app           = express();
 const PORT          = process.env.PORT          || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'aesfact2025';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'aesfact2026';
 
 // La inicialización de sql.js es asíncrona (carga un módulo WASM).
 // El servidor arrancará solo después de que la DB esté lista.
