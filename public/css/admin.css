@@ -1,0 +1,480 @@
+/* ============================================================
+   admin.css — Estilos del panel de administrador
+   Tema oscuro profesional
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Variables ────────────────────────────────────────────── */
+:root {
+  --azul-real:     #1a3a8f;
+  --azul-oscuro:   #0d1f5c;
+  --morado:        #7c3aed;
+  --morado-claro:  #a855f7;
+  --dorado:        #f59e0b;
+  --dorado-claro:  #fcd34d;
+  --verde:         #10b981;
+  --rojo:          #ef4444;
+  --gris-900:      #0f172a;
+  --gris-800:      #1e293b;
+  --gris-700:      #334155;
+  --gris-500:      #64748b;
+  --gris-300:      #94a3b8;
+  --gris-100:      #f1f5f9;
+  --blanco:        #ffffff;
+  --font-titulo:   'Cinzel', serif;
+  --font-cuerpo:   'Inter', sans-serif;
+}
+
+/* ── Reset y base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-cuerpo);
+  background: var(--gris-900);
+  color: var(--blanco);
+  min-height: 100vh;
+}
+
+/* ── Pantalla de login ────────────────────────────────────── */
+#pantalla-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(135deg, #0d1f5c 0%, #1a0a3e 50%, #0d1f5c 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(30,41,59,0.9);
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.login-card__icono {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.login-card__titulo {
+  font-family: var(--font-titulo);
+  font-size: 1.3rem;
+  color: var(--dorado);
+  margin-bottom: 0.4rem;
+}
+
+.login-card__sub {
+  font-size: 0.85rem;
+  color: var(--gris-300);
+  margin-bottom: 2rem;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(124,58,237,0.4);
+  border-radius: 10px;
+  color: var(--blanco);
+  font-size: 1rem;
+  outline: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+
+.login-card input:focus {
+  border-color: var(--morado-claro);
+}
+
+.login-card input::placeholder {
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.25);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, var(--morado) 0%, var(--azul-real) 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: var(--font-titulo);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.login-error {
+  margin-top: 0.75rem;
+  color: #f87171;
+  font-size: 0.85rem;
+  display: none;
+}
+.login-error.visible { display: block; }
+
+/* ── Dashboard principal ──────────────────────────────────── */
+#pantalla-admin {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#pantalla-admin.visible {
+  display: flex;
+}
+
+/* ── Topbar ───────────────────────────────────────────────── */
+.topbar {
+  background: var(--gris-800);
+  border-bottom: 1px solid var(--gris-700);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar__marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.topbar__marca span:first-child {
+  font-size: 1.5rem;
+}
+
+.topbar__titulo {
+  font-family: var(--font-titulo);
+  font-size: 0.9rem;
+  color: var(--dorado);
+}
+
+.topbar__titulo small {
+  display: block;
+  font-family: var(--font-cuerpo);
+  font-size: 0.7rem;
+  color: var(--gris-300);
+  font-weight: 400;
+}
+
+.btn-salir {
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  border: 1px solid var(--gris-700);
+  border-radius: 6px;
+  color: var(--gris-300);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-salir:hover { border-color: var(--rojo); color: #f87171; }
+
+/* ── Contenido principal ──────────────────────────────────── */
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Tarjetas de estadísticas ─────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+.stat-card {
+  background: var(--gris-800);
+  border: 1px solid var(--gris-700);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.stat-card:hover { border-color: var(--morado-claro); }
+
+.stat-card__icono { font-size: 1.8rem; margin-bottom: 0.4rem; }
+
+.stat-card__num {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card__num.total      { color: var(--dorado); }
+.stat-card__num.confirmado { color: var(--verde); }
+.stat-card__num.pendiente  { color: #fb923c; }
+
+.stat-card__label {
+  font-size: 0.78rem;
+  color: var(--gris-300);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Barra de herramientas ────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.buscador {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.65rem 1rem;
+  background: var(--gris-800);
+  border: 1px solid var(--gris-700);
+  border-radius: 8px;
+  color: var(--blanco);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.buscador:focus { border-color: var(--morado-claro); }
+.buscador::placeholder { color: var(--gris-500); }
+
+.btn-exportar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.btn-exportar:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-actualizar {
+  padding: 0.65rem 0.9rem;
+  background: var(--gris-800);
+  border: 1px solid var(--gris-700);
+  border-radius: 8px;
+  color: var(--gris-300);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-actualizar:hover { border-color: var(--morado-claro); color: white; }
+
+/* ── Tabla ────────────────────────────────────────────────── */
+.tabla-contenedor {
+  background: var(--gris-800);
+  border: 1px solid var(--gris-700);
+  border-radius: 12px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.tabla thead {
+  background: rgba(124,58,237,0.15);
+  border-bottom: 1px solid var(--gris-700);
+}
+
+.tabla th {
+  padding: 0.9rem 0.75rem;
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gris-300);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid rgba(51,65,85,0.5);
+  color: var(--gris-100);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover td {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Badge de estado de pago */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge.pendiente {
+  background: rgba(251,146,60,0.15);
+  color: #fb923c;
+  border: 1px solid rgba(251,146,60,0.3);
+}
+
+.badge.confirmado {
+  background: rgba(16,185,129,0.15);
+  color: #34d399;
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+/* Botón de cambiar estado de pago */
+.btn-pago {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-pago:hover { opacity: 0.85; transform: scale(1.03); }
+
+.btn-pago.confirmar {
+  background: rgba(16,185,129,0.2);
+  color: #34d399;
+  border: 1px solid rgba(16,185,129,0.4);
+}
+
+.btn-pago.revertir {
+  background: rgba(251,146,60,0.2);
+  color: #fb923c;
+  border: 1px solid rgba(251,146,60,0.4);
+}
+
+/* Etiqueta de Clash Royale */
+.etiqueta-cr {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--morado-claro);
+  font-weight: 600;
+}
+
+/* Fecha pequeña */
+.fecha-small {
+  font-size: 0.78rem;
+  color: var(--gris-500);
+}
+
+/* Estado vacío */
+.tabla-vacia {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--gris-500);
+}
+
+.tabla-vacia p:first-child {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Toast de notificación ────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--gris-800);
+  border: 1px solid var(--gris-700);
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--blanco);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 1000;
+  max-width: 320px;
+}
+
+.toast.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast.exito { border-color: var(--verde); }
+.toast.error { border-color: var(--rojo); }
+
+/* ── Spinner de carga ─────────────────────────────────────── */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gris-300);
+}
+
+.spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--morado-claro);
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .main { padding: 1rem; }
+  .topbar { padding: 0.75rem 1rem; }
+
+  /* Ocultar columnas menos importantes en móvil */
+  .tabla .col-telefono,
+  .tabla .col-fecha { display: none; }
+}
+
+@media (max-width: 480px) {
+  .tabla .col-codigo { display: none; }
+}
