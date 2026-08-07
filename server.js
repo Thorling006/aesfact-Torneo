@@ -49,7 +49,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde /public
+// Servir archivos estáticos (tanto de la raíz como de /public)
+app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ─────────────────────────────────────────────

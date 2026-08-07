@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel Admin — Torneo Clash Royale AESFACT</title>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════
+       PANTALLA DE LOGIN
+  ══════════════════════════════════════════════════ -->
+  <div id="pantalla-login" role="main">
+    <div class="login-card">
+      <div class="login-card__icono">🔐</div>
+      <h1 class="login-card__titulo">Panel de Administrador</h1>
+      <p class="login-card__sub">AESFACT — Torneo Clash Royale 2026</p>
+      <form id="form-login" onsubmit="iniciarSesion(event)">
+        <input
+          type="password"
+          id="input-password"
+          placeholder="Contraseña"
+          autocomplete="current-password"
+          required
+        />
+        <button type="submit" class="btn-login">Ingresar</button>
+        <p class="login-error" id="login-error">Contraseña incorrecta. Intenta de nuevo.</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       PANEL PRINCIPAL DE ADMINISTRADOR
+  ══════════════════════════════════════════════════ -->
+  <div id="pantalla-admin" role="main" aria-label="Panel de administración">
+
+    <!-- Barra superior -->
+    <nav class="topbar" aria-label="Barra de navegación admin">
+      <div class="topbar__marca">
+        <span aria-hidden="true">⚔️</span>
+        <div class="topbar__titulo">
+          Panel Admin
+          <small>Torneo Clash Royale — AESFACT</small>
+        </div>
+      </div>
+      <button class="btn-salir" onclick="cerrarSesion()" aria-label="Cerrar sesión">
+        🚪 Salir
+      </button>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="main">
+
+      <!-- ── Tarjetas de estadísticas ── -->
+      <section aria-label="Estadísticas del torneo">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__icono">👥</div>
+            <div class="stat-card__num total" id="stat-total">—</div>
+            <div class="stat-card__label">Total inscritos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icono">✅</div>
+            <div class="stat-card__num confirmado" id="stat-confirmados">—</div>
+            <div class="stat-card__label">Pagos confirmados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__icono">⏳</div>
+            <div class="stat-card__num pendiente" id="stat-pendientes">—</div>
+            <div class="stat-card__label">Pagos pendientes</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Barra de herramientas ── -->
+      <div class="toolbar" role="toolbar" aria-label="Herramientas de administración">
+        <input
+          type="search"
+          class="buscador"
+          id="buscador"
+          placeholder="🔍 Buscar por nombre, código o etiqueta..."
+          oninput="buscarConDelay()"
+          aria-label="Buscar inscripciones"
+        />
+        <button class="btn-actualizar" onclick="cargarInscripciones()" title="Recargar tabla" aria-label="Actualizar tabla">
+          🔄 Actualizar
+        </button>
+        <button class="btn-exportar" onclick="exportarExcel()" aria-label="Exportar a Excel">
+          📥 Exportar Excel
+        </button>
+      </div>
+
+      <!-- ── Tabla de inscripciones ── -->
+      <section aria-label="Lista de inscripciones">
+        <div class="tabla-contenedor">
+          <table class="tabla" id="tabla-inscripciones" aria-label="Inscripciones al torneo">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nombre</th>
+                <th scope="col" class="col-codigo">Código</th>
+                <th scope="col" class="col-telefono">Teléfono</th>
+                <th scope="col">Nick CR</th>
+                <th scope="col">Etiqueta</th>
+                <th scope="col" class="col-fecha">Inscripción</th>
+                <th scope="col">Pago</th>
+                <th scope="col">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+              <tr>
+                <td colspan="9">
+                  <div class="loading">
+                    <span class="spinner" aria-hidden="true"></span>
+                    Cargando inscripciones...
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div><!-- /main -->
+  </div><!-- /pantalla-admin -->
+
+  <!-- Toast de notificaciones -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

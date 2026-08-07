@@ -32,11 +32,11 @@ jobs:
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v4
 
-      # Sube la carpeta /public como el sitio estático
+      # Sube la carpeta del sitio estático
       - name: Subir archivos del sitio
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './public'
+          path: '.'
 
       - name: Desplegar en GitHub Pages
         id: deployment
