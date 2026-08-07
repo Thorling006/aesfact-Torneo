@@ -17,10 +17,10 @@
  */
 const CONFIG = {
   // URL de tu Google Apps Script (reemplaza este valor)
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/TU_ID_DEL_APPS_SCRIPT/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyis-tNo-SdaHZx-gWC1eI3mHYh8Omu5YUkHMmT68gH9aPWguegx93rvqDa7QdhanVUhQ/exec',
 
   // ID de tu Google Sheet (para exportar a Excel directamente)
-  SHEET_ID: 'TU_SHEET_ID_AQUI',
+  SHEET_ID: '1zMHB2Iea860cIdfoG6TkyujAtbzxRbNgU8vZ3Ok7--I',
 
   // Contraseña del panel de administrador
   // (debe coincidir con ADMIN_PASSWORD en apps-script/codigo.gs)
