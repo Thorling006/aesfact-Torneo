@@ -218,12 +218,15 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    // Enviar al backend (Google Apps Script)
-    // Usamos Content-Type: text/plain para evitar el preflight CORS
-    // Apps Script recibe el JSON en e.postData.contents y lo parsea normalmente
-    const respuesta = await fetch(CONFIG.APPS_SCRIPT_URL, {
+    // Detectar si estamos en entorno local o remoto
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const url = isLocal ? '/api/inscripcion' : CONFIG.APPS_SCRIPT_URL;
+    const headers = isLocal ? { 'Content-Type': 'application/json' } : { 'Content-Type': 'text/plain;charset=utf-8' };
+
+    // Enviar al backend (Express local o Google Apps Script)
+    const respuesta = await fetch(url, {
       method:   'POST',
-      headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+      headers:  headers,
       body:     JSON.stringify(datos),
       redirect: 'follow',
     });
