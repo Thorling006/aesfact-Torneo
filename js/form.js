@@ -218,24 +218,50 @@ form.addEventListener('submit', async (e) => {
   };
 
   try {
-    // Detectar si estamos en entorno local o remoto
+    // Detectar entorno (local vs GitHub Pages / remoto)
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    // Si estamos en entorno local de Express, usamos la API local; de lo contrario Google Apps Script
     const url = isLocal ? '/api/inscripcion' : CONFIG.APPS_SCRIPT_URL;
-    const headers = isLocal ? { 'Content-Type': 'application/json' } : { 'Content-Type': 'text/plain;charset=utf-8' };
+    const headers = isLocal 
+      ? { 'Content-Type': 'application/json' } 
+      : { 'Content-Type': 'text/plain;charset=utf-8' };
 
-    // Enviar al backend (Express local o Google Apps Script)
-    const respuesta = await fetch(url, {
-      method:   'POST',
-      headers:  headers,
-      body:     JSON.stringify(datos),
-      redirect: 'follow',
-    });
+    let respuesta;
+    try {
+      respuesta = await fetch(url, {
+        method:   'POST',
+        headers:  headers,
+        body:     JSON.stringify(datos),
+        redirect: 'follow',
+      });
+    } catch (fetchErr) {
+      // Si falló fetch local, intentar con Apps Script como respaldo
+      if (isLocal && CONFIG.APPS_SCRIPT_URL) {
+        respuesta = await fetch(CONFIG.APPS_SCRIPT_URL, {
+          method:   'POST',
+          headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+          body:     JSON.stringify(datos),
+          redirect: 'follow',
+        });
+      } else {
+        throw fetchErr;
+      }
+    }
 
-    const resultado = await respuesta.json();
+    const textoRespuesta = await respuesta.text();
+    let resultado;
+    try {
+      resultado = JSON.parse(textoRespuesta);
+    } catch (parseErr) {
+      console.error('Respuesta no JSON del servidor:', textoRespuesta);
+      throw new Error('Respuesta inválida del servidor. Por favor intenta de nuevo.');
+    }
 
-    if (!respuesta.ok) {
-      // Error del servidor (ej. duplicado, validación)
-      mostrarAlertaGlobal(resultado.error || 'Ocurrió un error. Intenta de nuevo.');
+    // Validar si el backend retornó un error (ej. duplicado o validación)
+    if (resultado.error || !respuesta.ok || !resultado.inscripcion) {
+      const mensajeError = resultado.error || 'Ocurrió un error al procesar tu inscripción. Intenta de nuevo.';
+      mostrarAlertaGlobal(mensajeError);
       btnInscribir.disabled  = false;
       btnInscribir.innerHTML = '⚔️ Inscribirme al Torneo';
       return;
@@ -245,8 +271,10 @@ form.addEventListener('submit', async (e) => {
     mostrarPantallaExito(resultado.inscripcion);
 
   } catch (err) {
-    // Error de red
-    mostrarAlertaGlobal('Error de conexión. Verifica tu internet e intenta de nuevo.');
+    console.error('Error al registrar:', err);
+    mostrarAlertaGlobal(err.message && !err.message.includes('fetch') && !err.message.includes('NetworkError')
+      ? err.message
+      : 'Error de comunicación con el servidor. Verifica tu conexión o intenta nuevamente.');
     btnInscribir.disabled  = false;
     btnInscribir.innerHTML = '⚔️ Inscribirme al Torneo';
   }

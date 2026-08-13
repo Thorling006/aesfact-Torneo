@@ -53,6 +53,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ruta amigable para el panel de administración
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 // ─────────────────────────────────────────────
 // Middleware de autenticación para rutas admin
 // ─────────────────────────────────────────────
